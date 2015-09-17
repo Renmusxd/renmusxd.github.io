@@ -72,8 +72,13 @@ function update(){
         }
         var t_vx = (alpha*rvx)+(beta*nvx);
         var t_vy = (alpha*rvy)+(beta*nvy);
-        c.vx = t_vx/Math.sqrt(t_vx*t_vx + t_vy*t_vy);
-        c.vy = t_vy/Math.sqrt(t_vx*t_vx + t_vy*t_vy);
+        if (t_vx*t_vy == 0){
+            c.vx = 0;
+            c.vy = 0;
+        } else {
+            c.vx = t_vx/Math.sqrt(t_vx*t_vx + t_vy*t_vy);
+            c.vy = t_vy/Math.sqrt(t_vx*t_vx + t_vy*t_vy);
+        }
         c.x += c.vx;
         c.y += c.vy;
 
