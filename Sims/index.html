@@ -7,21 +7,31 @@
   <!-- Include jQuery -->
   <script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'></script>
   <script type='text/javascript' src='js/script.js'></script>
+  <script type="text/javascript"
+    src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+  </script>
   <link rel="stylesheet" type="text/css" href="css/main.css">  
 </head>
 
 <body id="body">
-<p>Life on a Torus</p>
+<h3>Life on a Torus</h3>
+<p>This is a little simulation of flocking behaviour on a torus. Each of the creatures below follows a set of rules:
+<ul>
+<li>Periodically generate a random reference velocity vector \(\vec{a}\)</li>
+<li>Let \(\vec{b}\) be the average velocity of k nearest neighbors</li>
+<li>Set own velocity to \(\alpha * \vec{a} + (1-\alpha)*\vec{b}\)</li>
+</ul>
+</p>
     <div id="left">
         <canvas id="emergentCanvas" width="500" height="500" style="border:1px solid #000000;">
         </canvas>
     </div>
     <div id="right">
         <p><input type="range" min="0" max="100" value="0" onchange="showValueWeight(this.value)"/>
-        Weight: <span id="weight_text">0</span></p>
+        Alpha: <span id="weight_text">0</span></p>
         <p><input type="range" min="1" max="10" value="1" onchange="showValueK(this.value)"/>
         K: <span id="k_text">1</span></p>
-        <p><input type="range" min="0" max="1000" value="1" onchange="showValueMax(this.value)"/>
+        <p><input type="range" min="0" max="1000" value="100" onchange="showValueMax(this.value)"/>
         MaxD: <span id="max_text">100</span></p>
         <script>
             function showValueWeight(newValue){
