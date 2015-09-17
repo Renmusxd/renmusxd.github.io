@@ -18,7 +18,7 @@
 <p>This is a little simulation of flocking behaviour on a torus. Each of the creatures below follows a set of rules:
 <ul>
 <li>Periodically generate a random reference velocity vector \(\vec{a}\)</li>
-<li>Let \(\vec{b}\) be the average velocity of k nearest neighbors</li>
+<li>Let \(\vec{b}\) be the average velocity of k nearest neighbors (within search distance MaxD)</li>
 <li>Set own velocity to \(\alpha * \vec{a} + (1-\alpha)*\vec{b}\)</li>
 </ul>
 </p>
