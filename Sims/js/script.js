@@ -3,9 +3,9 @@ var height;
 var ctx;
 var critters = [];
 
-var alpha = 0.5; // Weight to random choice
-var beta = 0.5; // Weight to nearest neighbors
-var k = 3; // Nearest neighbors to consider
+var alpha = 1; // Weight to random choice
+var beta = 0; // Weight to nearest neighbors
+var k = 1; // Nearest neighbors to consider
 var maxcnt = 100;
 var maxd = 100;
 
@@ -28,7 +28,6 @@ function addCritter(){
     var nrvx = rvx / Math.sqrt(rvx*rvx + rvy*rvy);
     var nrvy = rvy / Math.sqrt(rvx*rvx + rvy*rvy);
     var c = {'x':x, 'y':y, 'rvx':nrvx, 'rvy':nrvy,'vx':nrvx, 'vy':nrvy, 'cnt':0};
-    console.log(c);
     critters.push(c);
 }
 
@@ -51,25 +50,26 @@ function update(){
             c.rvy = nrvy;
         }
         // Get k nearest neighbors
-        var ks = {};
-        for (j in critters){
-            if (i==j) continue;
-            var cj = critters[j];
-            ks[toroidalD(x,y,cj.x,cj.y)] = j;
-        }
-        var sorted_keys = Object.keys(ks).sort();
+        var t = getNearestK(i, critters, k);
         var total_vx = 0;
         var total_vy = 0;
-        for (j=0; j<Math.min(k,critters.length); j++){
-            var dj = sorted_keys[j];
-            var cj = critters[ks[dj]];
-            total_vx += cj.vx;
-            total_vy += cj.vy;
+        for (j=0; j<t.ds.length; j++){
+            var d = t.ds[j];
+            var cj = critters[t.djs[j]];
+            if (d <= maxd){
+                total_vx += cj.vx;
+                total_vy += cj.vy;
+            }
         }
-
-        var nvx = total_vx/Math.sqrt(total_vx*total_vx + total_vy*total_vy);
-        var nvy = total_vy/Math.sqrt(total_vx*total_vx + total_vy*total_vy);
-
+        var nvx;
+        var nvy;
+        if (total_vx*total_vy == 0){
+            nvx = 0;
+            nvy = 0;
+        } else {
+            nvx = total_vx/Math.sqrt(total_vx*total_vx + total_vy*total_vy);
+            nvy = total_vy/Math.sqrt(total_vx*total_vx + total_vy*total_vy);
+        }
         c.vx = (alpha*rvx)+(beta*nvx);
         c.vy = (alpha*rvy)+(beta*nvy);
         c.x += c.vx;
@@ -80,6 +80,35 @@ function update(){
         c.cnt--;
     }
     draw();
+}
+
+function getNearestK(sel_i, critters, k){
+    var ds = [];
+    var djs = [];
+    var sel_c = critters[sel_i];
+    for (i in critters){
+        if (sel_i==i){continue;}
+        var c = critters[i];
+        var new_d = toroidalD(sel_c.x, sel_c.y, c.x, c.y);
+        var new_dj = i;
+        if (ds.length < k){
+            ds.push(new_d);
+            djs.push(new_dj);
+        } else {
+            for (j=0; j<k; j++){
+                if (new_d < ds[j]){
+                    var temp = ds[j];
+                    ds[j] = new_d;
+                    new_d = temp;
+
+                    temp = djs[j];
+                    djs[j] = new_dj;
+                    new_dj = temp;
+                }
+            }
+        }
+    }
+    return {'ds':ds, 'djs':djs};
 }
 
 function toroidalD(ax,ay,bx,by){
