@@ -3,6 +3,8 @@ var height;
 var ctx;
 var critters = [];
 
+var DRAW_R = 10;
+
 var alpha = 1; // Weight to random choice
 var beta = 0; // Weight to nearest neighbors
 var k = 1; // Nearest neighbors to consider
@@ -133,16 +135,65 @@ function draw(){
         var vx = c.vx;
         var vy = c.vy;
 
-        ctx.arc(x, y, 10, 0, 2 * Math.PI, false);
+        ctx.arc(x, y, DRAW_R, 0, 2 * Math.PI, false);
         ctx.fillStyle = 'green';
         ctx.fill();
 
         ctx.beginPath();
         ctx.strokeStyle="#FF0000";
         ctx.moveTo(x,y);
-        ctx.lineTo(x+(10*vx),y+(10*vy));
-        ctx.stroke();
+        ctx.lineTo(x+(DRAW_R*vx),y+(DRAW_R*vy));
         ctx.closePath();
+        ctx.stroke();
+
+        if (c.x < DRAW_R){
+            ctx.arc(x+width, y, DRAW_R, 0, 2 * Math.PI, false);
+            ctx.fillStyle = 'green';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.strokeStyle="#FF0000";
+            ctx.moveTo(x+width,y);
+            ctx.lineTo(x+width+(DRAW_R*vx),y+(DRAW_R*vy));
+            ctx.closePath();
+            ctx.stroke();
+        } else if (c.x > width - DRAW_R){
+            ctx.arc(x-width, y, DRAW_R, 0, 2 * Math.PI, false);
+            ctx.fillStyle = 'green';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.strokeStyle="#FF0000";
+            ctx.moveTo(x-width,y);
+            ctx.lineTo(x-width+(DRAW_R*vx),y+(DRAW_R*vy));
+            ctx.closePath();
+            ctx.stroke();
+        }
+        if (c.y < DRAW_R){
+            ctx.arc(x, y+height, DRAW_R, 0, 2 * Math.PI, false);
+            ctx.fillStyle = 'green';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.strokeStyle="#FF0000";
+            ctx.moveTo(x,y+height);
+            ctx.lineTo(x+(DRAW_R*vx),y+height+(DRAW_R*vy));
+            ctx.closePath();
+            ctx.stroke();
+        } else if (c.y > height - DRAW_R){
+            ctx.arc(x, y-height, DRAW_R, 0, 2 * Math.PI, false);
+            ctx.fillStyle = 'green';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.strokeStyle="#FF0000";
+            ctx.moveTo(x,y-height);
+            ctx.lineTo(x+(DRAW_R*vx),y-height+(DRAW_R*vy));
+            ctx.closePath();
+            ctx.stroke();
+        }
+
+
     }
 }
 
