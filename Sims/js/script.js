@@ -70,8 +70,10 @@ function update(){
             nvx = total_vx/Math.sqrt(total_vx*total_vx + total_vy*total_vy);
             nvy = total_vy/Math.sqrt(total_vx*total_vx + total_vy*total_vy);
         }
-        c.vx = (alpha*rvx)+(beta*nvx);
-        c.vy = (alpha*rvy)+(beta*nvy);
+        var t_vx = (alpha*rvx)+(beta*nvx);
+        var t_vy = (alpha*rvy)+(beta*nvy);
+        c.vx = t_vx/Math.sqrt(t_vx*t_vx + t_vy*t_vy);
+        c.vy = t_vy/Math.sqrt(t_vx*t_vx + t_vy*t_vy);
         c.x += c.vx;
         c.y += c.vy;
 
