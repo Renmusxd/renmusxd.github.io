@@ -18,7 +18,7 @@
 <p>This is a little simulation of flocking behaviour on a torus. Each of the creatures below follows a set of rules:
 <ul>
 <li>Periodically generate a random reference velocity vector \(\vec{a}\)</li>
-<li>Let \(\vec{b}\) be the average velocity of k nearest neighbors (within search distance MaxD)</li>
+<li>Let \(\vec{b}\) be the average velocity of k nearest neighbors (within \(d=\mbox{MaxD}\), \(\theta=\mbox{theta}\) )</li>
 <li>Set own velocity to \(\alpha * \vec{a} + (1-\alpha)*\vec{b}\)</li>
 </ul>
 </p>
@@ -27,13 +27,21 @@
         </canvas>
     </div>
     <div id="right">
-        <p><input type="range" min="0" max="100" value="0" onchange="showValueWeight(this.value)"/>
+        <p><input type="range" min="0" max="50" value="50" onchange="showCritters(this.value)"/>
+        Critters: <span id="num_text">50</span></p>
+        <p><input type="range" min="0" max="100" value="0" oninput="showValueWeight(this.value)"/>
         Alpha: <span id="weight_text">0</span></p>
-        <p><input type="range" min="1" max="10" value="1" onchange="showValueK(this.value)"/>
+        <p><input type="range" min="1" max="10" value="1" oninput="showValueK(this.value)"/>
         K: <span id="k_text">1</span></p>
-        <p><input type="range" min="0" max="1000" value="100" onchange="showValueMax(this.value)"/>
+        <p><input type="range" min="0" max="1000" value="100" oninput="showValueMax(this.value)"/>
         MaxD: <span id="max_text">100</span></p>
+        <p><input type="range" min="0" max="360" value="360" oninput="showValueTheta(this.value)"/>
+        Theta: <span id="theta_text">360</span></p>
         <script>
+            function showCritters(newValue){
+                document.getElementById("num_text").innerHTML=newValue;
+                initCritters(newValue);
+            }
             function showValueWeight(newValue){
                 document.getElementById("weight_text").innerHTML=newValue/100.0;
                 alpha = 1-newValue/100.0;
@@ -46,6 +54,10 @@
             function showValueMax(newValue){
                 document.getElementById("max_text").innerHTML=newValue;
                 maxd = newValue;
+            }
+            function showValueTheta(newValue){
+                document.getElementById("theta_text").innerHTML=newValue;
+                theta_cos = Math.cos((newValue/360)*3.141592); // [0, pi]
             }
         </script>
     </div>

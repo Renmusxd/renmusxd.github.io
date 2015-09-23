@@ -2,8 +2,9 @@ var width;
 var height;
 var ctx;
 var critters = [];
-
 var DRAW_R = 10;
+
+var MAX_C = 2
 
 var alpha = 1; // Weight to random choice
 var beta = 0; // Weight to nearest neighbors
@@ -11,15 +12,22 @@ var k = 1; // Nearest neighbors to consider
 var maxcnt = 100;
 var maxd = 100;
 
+var theta_cos = -1;
+
 function init() {
     var canvas =document.getElementById('emergentCanvas');
     width = canvas.width;
     height = canvas.height; 
     ctx = canvas.getContext('2d');
-    for (i=0; i<50; i++){
+    initCritters(MAX_C)
+    setInterval(update, 10);
+}
+
+function initCritters(num){
+    critters = []
+    for (i=0; i<num; i++){
         addCritter();
     }
-    setInterval(update, 10);
 }
 
 function addCritter(){
@@ -91,6 +99,8 @@ function update(){
     draw();
 }
 
+// Returns nearest k neighbors within distance maxD and
+// within angle theta
 function getNearestK(sel_i, critters, k){
     var ds = [];
     var djs = [];
@@ -99,6 +109,15 @@ function getNearestK(sel_i, critters, k){
         if (sel_i==i){continue;}
         var c = critters[i];
         var new_d = toroidalD(sel_c.x, sel_c.y, c.x, c.y);
+        if (new_d > maxd){
+            continue;
+        }
+        var c_norm = Math.sqrt(c.x*c.x + c.y*c.y);
+        var sel_norm = Math.sqrt(sel_c.vx*sel_c.vx + sel_c.vy*sel_c.vy);
+        var norm_dot = ((sel_c.x-c.x)*sel_c.x + (sel_c.y-c.y)*sel_c.y)/(c_norm * sel_norm);
+        if (norm_dot < theta_cos){
+            continue;
+        }
         var new_dj = i;
         if (ds.length < k){
             ds.push(new_d);
