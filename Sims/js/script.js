@@ -4,7 +4,7 @@ var ctx;
 var critters = [];
 var DRAW_R = 10;
 
-var MAX_C = 2
+var MAX_C = 50
 
 var alpha = 1; // Weight to random choice
 var beta = 0; // Weight to nearest neighbors
