@@ -1,21 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
+<head></head>
+<body onload="redirect_me()">
+	<script>
+	function getUrlVars() {
+	    var vars = {};
+	    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+	        vars[key] = value;
+	    });
+	    return vars;
+	}
 
-<script>
-function getUrlVars() {
-    var vars = {};
-    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
-        vars[key] = value;
-    });
-    return vars;
-}
+	function redirect_me(){
+		var myvars = getUrlsVars();
+		console.log(myvars);
+		var postid = myvars["id"];
 
-var postid = getUrlsVars()["id"];
-
-if (postid == "2") {
-	window.location.replace("../pred_prey.html");
-} else if (postid == "3") {
-	window.location.replace("../quantum_computing.html");
-}
-
-</script>
+		if (postid == "2") {
+			window.location.replace("../pred_prey.html");
+		} else if (postid == "3") {
+			window.location.replace("../quantum_computing.html");
+		}
+	}
+	</script>
+</body>	
