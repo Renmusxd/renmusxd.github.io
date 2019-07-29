@@ -1,0 +1,446 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="author" content="Sumner Hearth" />
+    <meta property="og:image" content="/static/img/predprey-2017-10-20-060958.png" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Reinforcement Learning with Predator/Prey" />
+    <meta property="og:description" content="A brief introduction to Q learning using a partially observable system with many actors. We will see how basic Q learning is performed and explore its failings in complicated environments." />
+    <meta property="fb:app_id" content="825006557706123" />
+
+    <title>Reinforcement Learning with Predator/Prey - Wx + b</title>
+    <!-- Bootstrap Core CSS -->
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!--<link href="/static/css/blogstyle.css" rel="stylesheet">-->
+    <!--<link href="/static/css/loginform.css" rel="stylesheet">-->
+    <!--<link href="/static/css/post.css" rel="stylesheet">-->
+    <link href="/static/css/blogstyle.css" rel="stylesheet">
+    <link href="/static/css/loginform.css" rel="stylesheet">
+    <link href="/static/css/post.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <!--<link href="/static/css/modern-business.css" rel="stylesheet">-->
+    <link href="/static/css/modern-business.css" rel="stylesheet">
+
+    <link rel="icon" href="/static/img/predprey-2017-10-20-060958.png">
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+
+
+</head>
+<body>
+    <!-- Navigation -->
+<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            
+            <a class="navbar-brand" href="/">
+                <i><b>W</b>x + b</i>
+            </a>
+        </div>
+        
+
+    </div>
+    <!-- /.container -->
+</nav>
+
+    
+<!-- Page Content -->
+<div class="container">
+
+    <div class="row blogsnippet">
+        <div class="col-lg-10 col-lg-offset-1 ">
+            <h1>Reinforcement Learning with Predator/Prey</h1>
+            
+            <hr>
+            <p><p>
+	Large parts of the content for this post were drawn from <a href="https://mitpress.mit.edu/books/reinforcement-learning"> <i>Reinforcement Learning: An Introduction</i></a> by Sutton and Barto, as well Arthur Juliani's multi part series on <a href="https://medium.com/emergent-future/simple-reinforcement-learning-with-tensorflow-part-0-q-learning-with-tables-and-neural-networks-d195264329d0">Medium</a>
+</p>
+
+<p>
+	The point of this project is to explore reinforcement learning in an analogue of real life situations. Short of robots actually hunting other entities, this problem involves multiple RL actors either cooperating or competing as well as a partially observable environment. 
+</p>
+
+<p>
+	See the project on <a href="https://www.github.com/Renmusxd/Rswarm">Github</a>. Note this repository is active, subject to change, and not exactly cleaned up yet. 
+<br> See release version <a href="https://github.com/Renmusxd/RSwarm/tree/9a9b9ee20b46e66f24301cf4a21df92c1c1ec837"> v1.0</a> to get the code at the time of this writing.
+</p>
+
+
+<div class="svgcontainer-2-3">
+<svg viewBox="0 0 100 66" preserveAspectRation="none">
+	<polygon points="50,50 0,0 14.644,0" style="fill:blue;stroke:black;stroke-width:0.1" fill-opacity="0.4"/>
+	<polygon points="50,50 14.644,0 27.3,0" style="fill:blue;stroke:black;stroke-width:0.1" fill-opacity="0.4"/>
+	<polygon points="50,50 27.3,0 42.1783,0" style="fill:blue;stroke:black;stroke-width:0.1" fill-opacity="0.4"/>
+	<polygon points="50,50 42.1783,0 57.8217,0" style="fill:blue;stroke:black;stroke-width:0.1" fill-opacity="0.4"/>
+	<polygon points="50,50 57.8217,0 72.6995,0" style="fill:blue;stroke:black;stroke-width:0.1" fill-opacity="0.4"/>
+	<polygon points="50,50 72.6995,0 85.35534,0" style="fill:blue;stroke:black;stroke-width:0.1" fill-opacity="0.4"/>
+	<polygon points="50,50 85.35534,0 100,0" style="fill:blue;stroke:black;stroke-width:0.1" fill-opacity="0.4"/>
+
+	<polygon points="50,45 45,55 55,55" style="fill:red;stroke:black;stroke-width:1;"/>
+	<polygon points="30,20 25,10 35,10" style="fill:red;stroke:black;stroke-width:1;"/>
+	<polygon points="70,20 75,10 65,10" style="fill:darkblue;stroke:black;stroke-width:1;"/>
+</svg>
+</div>
+
+<h2>A brief introduction to Q learning</h2>
+
+<p>
+	Reinforcement learning, in a nutshell, is how to make a program learn to maximize the total reward gained from an environment. The environment is defined by some blackbox with a state, set of actions, and rewards. Each action takes you from one state to another and returns some reward.  Let's denote these properties of the environment with associated timestamps as \(s_t\), \(a_t\), \(r_t\). 
+</p>
+
+<p>
+What we want is to construct a policy, denoted \(\pi(s, a) \mapsto \mathbb{R}\), which gives the probability of taking an action in a given state in order to maximize the total reward extracted from the environment. We start in \(s_0\) and follow the choices given by \(\pi(s_t,a_t)\) at each time step \(t\). See <a href="#policyprobability">appendix</a> for an example of why probabilities can outperform a simple choice of "best result". See <a href="#greedy_policy">appendix</a> for counter argument.
+</p>
+
+<p>
+Q learning approaches this problem by defining the following function:
+</p>
+<p>
+$$Q(s_t,a_t) \leftarrow Q(s_t,a_t) + \alpha \left[ r_{t+1} + \gamma ~ \mbox{max}_a ~ Q(s_{t+1}, a) - Q(s_t, a_t)   \right]$$ 
+
+To examine this, let's take the case with unit step size \(\alpha = 1\):
+
+$$Q(s_t,a_t) \leftarrow r_{t+1} + \gamma ~ \mbox{max}_a ~ Q(s_{t+1}, a)$$ 
+</p>
+
+<p>
+Ignoring convergence concerns for now we can see that \(Q\) takes on the value of the reward for performing the action \(a_t\) in state \(s_t\) plus the discounted reward for taking the highest value action in the next state. Thus if we were to expand this formula we would see that \(Q(s,a)\) is equal to the reward for taking the action \(a\) in state \(s\) and then performing optimally thereafter. Note that since \(Q\) is bootstrapping off of itself it will not immediately take the actual value described above, instead it will approach the value if convergence conditions are met.
+</p>
+
+<p>
+If/Once we have access to the function \(Q(s_t, a)\) then we can simply construct \(\pi(s_t, a_t)\) by comparing the value of \(Q(s_t, a_t)\) to all other actions in any way we see fit. In very simple form we could have \(\pi(s_t, a_t) = 1\) for \(a_t = \mbox{argmax}_a~Q(s_t, a)\) and \(0\) otherwise (meaning we always take the "best" action).
+</p>
+
+<h2 id="envdef">Pred/Prey Environment</h2>
+
+<p>
+In this project I explore the application of Q learning to the following environment:
+We have a square map filled with many copies of predator and prey agents. Agents have a limited energy supply and die after running out of energy, falling off the map, or being eaten by another agent. I am trying to use Q learning to have the predator agents learn how to pursue and catch the prey. The prey use a heuristic policy that I manually defined which simply avoids falling off the edge of the map and replenishes energy from the environment when needed. 
+</p>
+
+<p>
+The world offers a state to each agent which include a few internal variables, such as relative energy compared to maximum (0 implies imminent death), as well as vision in the form of an array of gray-scale and distance; Predators appear as +1, Prey appear as -1, and the map wall appears as 0. Distance is relative to maximum view distance defaulting to 1 when nothing is in view. We can refer to the \(i^{th}\) pixel as a tuple \((c_i,d_i)\) giving color and distance.
+</p>
+
+<p>
+Agents may choose to move forward (and optionally left or right), stay still, graze, attack, or mate. 
+</p>
+
+<p>
+Rewards are also in the process of being tuned, what is consistent though is that predators are modestly rewarded for attacking predators, strongly rewarded for attacking prey or mating, and harshly punished for dying in any way. 
+</p>
+
+<p>
+If you are familiar with reinforcement learning you will immediately notice that this is not a Markov Decision Process. What this means is that it does not satisfy the Markov Property which states that all relevant information for making future choices can be determined from the given state and action alone:
+
+<blockquote cite="https://mitpress.mit.edu/books/reinforcement-learning">
+If the state signal has the <i>Markov property</i> [...] then the environment's response at \(t+1\) depends only on the state and action representations at \(t\), in which case the environment's dynamics can be defined by specifying only
+$$\mathbb{P}(s_{t+1} = s', r_{t+1} = r  ~ \vert ~ s_t, a_t)$$
+for all \(s'\), \(r\), \(s_t\), and \(a_t\).
+<p align="right"><i>- Reinforcement Learning: An Introduction</i></p>
+</blockquote>
+This is not the case in our environment, an agent may simply pass out of the view cone of another agent and yet still be able to affect their future actions.
+</p>
+ 
+<p>
+I point this out because there isn't a single correct answer for the action to take in a given state; the reward may depend on hidden variables. Allowing the policy to select a probability of actions can help mitigate this problem. For a more detailed example see the <a href="#policyprobability">appendix</a> referenced before.
+</p>
+
+<h2>Implementation</h2>
+<p>
+The execution of the above design is admittedly a bit sloppy, but we will focus on the implementation of the <a href="https://www.tensorflow.org/">tensorflow</a> model as opposed to the environment.
+</p>
+
+<p>
+For my first attempt the predator agents will have a simple dense neural network connecting the 13 inputs (3 internal senses + 5 color pixels + 5 distance pixels) to two hidden layers of width 15 to an output layer of size 10 for each action.
+</p>
+
+<p>
+I create two such networks called \(Q\) and \(Q'\), when training the \(Q\) network we will base the loss function off of \(Q(s_t,a_t) \leftarrow r_{t+1} + \gamma ~ \mbox{max}_a ~ Q'(s_{t+1}, a)\) then copy the weights of \(Q\) into \(Q'\) after a fixed number of cycles. Doing this makes the training more stable. Only one network is used during evaluation of the environment however. Below is the pseudocode for this first version:
+</p>
+
+<p>
+<pre>
+model = Environment()
+buffer = ReplayBuffer()
+Q, Q' = NN()
+
+while True:
+    π = Q.get_policy()
+    for running_iters:
+        s = model.get_all_agent_senses()
+        a = choose_from_probs( π(s,:) )
+        r, s' = model.act_all_agents(a)
+        buffer.save(s, a, r, s')
+
+    for training_iters:
+        Q' = Q
+        for (s, a, r, s') in buffer.batches():
+            Q(s,a) ← r + y[ max Q(s',:) ]
+</pre>
+</p>
+
+<p>
+For <tt>choose_from_probs(π(s))</tt> I used <a href="https://www.tensorflow.org/api_docs/python/tf/multinomial"><tt>tf.multinomial</tt></a> to pick one of the actions based on the probabilities assigned to each by the policy. Here the <tt>←</tt> operator is normal backpropagation.
+</p>
+
+<h2>Results</h2>
+
+<p>
+Initially the predators don't display any hunting skills. They sometimes randomly attack prey upon encountering.
+</p>
+<p>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/tIDpbs_cs8A" frameborder="0" gesture="media" allow="encrypted-media" allowfullscreen></iframe>
+</p>
+
+<p>
+After a few training iterations, predators are able to more consistently catch prey, following other bots (including other predators). They sometimes avoid the world boundaries.
+</p>
+<p>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/DhDcp4fxhiY" frameborder="0" gesture="media" allow="encrypted-media" allowfullscreen></iframe>
+</p>
+
+
+
+<p>
+After many training iterations, the predators are worse at catching prey, and worse at avoiding boundaries - often pausing at the border until exploration pushes them past the edge. See <a href="#greedy_policy">appendix</a> for a possible explanation as to why this is.
+</p>
+<p>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/-qZ9j5b5amg" frameborder="0" gesture="media" allow="encrypted-media" allowfullscreen></iframe>
+</p>
+
+
+<h2>Future Work</h2>
+<p>
+It isn't satisfying to have a golden region wherein peak performance is achieved. We would much prefer to have training consistently improve reward until the network achieves peak performance. While this model could certainly be improved with various Q learning techniques (see most old <a href="http://www.davidqiu.com:8888/research/nature14236.pdf">DeepMind papers</a> for details) I would prefer to move on and explore new architectures later.
+</p>
+
+<p>
+This has been a brief introduction to reinforcement learning. Instead of using a toy model, here I used something which can be developed upon to hopefully create interesting behavior. In future posts I will introduce <i>Recurrent Neural Networks</i> (and <i>LSTM</i>s) for the purpose of solving several of the issues with \(\mathbb{P}\) and \(\pi\) we have seen so far. They can be thought of as a sort of "memory", but more on that later.
+</p>
+
+<hr>
+<h2> Appendix </h2>
+
+<h3 id="policyprobability">When is probabalistic \(\pi(s,a)\) better?</h3>
+<p>
+This is an example from <a href="https://mitpress.mit.edu/books/reinforcement-learning"> <i>Reinforcement Learning: An Introduction</i></a> but I cannot for the life of me find the page number.
+</p>
+
+<p>
+Consider the following environment as follows, you have a grid as detailed below where the yellow ball indicated a <i>goal</i> which, upon entering, gives some positive reward amount. All other movement rewards zero. We consider the experiment terminated once rewarded.
+</p>
+
+<p>
+The agent when in a given square can only observe whether it is possible to move in each direction, possibly represented as the array \([m_{north}, m_{south}, m_{east}, m_{west}]\), thus from the grid position \((2,0)\) we have the state \([0,1,1,1]\).
+</p>
+
+<div class="svgcontainer-1-2">
+<svg viewBox="0 0 100 50" preserveAspectRation="none">
+    <polygon points="0,0 20,0 20,20 0,20" style="fill:white;stroke:black;"/>
+    <polygon points="20,0 40,0 40,20 20,20" style="fill:white;stroke:black;"/>
+    <polygon points="40,0 60,0 60,20 40,20" style="fill:white;stroke:black;"/>
+    <polygon points="60,0 80,0 80,20 60,20" style="fill:white;stroke:black;"/>
+    <polygon points="80,0 100,0 100,20 80,20" style="fill:white;stroke:black;"/>
+
+    <polygon points="0,20 20,20 20,40 0,40" style="fill:white;stroke:black;"/>
+    <polygon points="40,20 60,20 60,40 40,40" style="fill:white;stroke:black;"/>
+    <polygon points="80,20 100,20 100,40 80,40" style="fill:white;stroke:black;"/>
+
+    <circle cx="50" cy="30" r="5" style="fill:yellow;"/>
+
+    <text x="1" y="5" font-size="5">0,0</text>
+    <text x="21" y="5" font-size="5">1,0</text>
+    <text x="41" y="5" font-size="5">2,0</text>
+    <text x="61" y="5" font-size="5">3,0</text>
+    <text x="81" y="5" font-size="5">4,0</text>
+    <text x="1" y="25" font-size="5">0,1</text>
+    <text x="41" y="25" font-size="5">2,1</text>
+    <text x="81" y="25" font-size="5">4,1</text>
+</svg>
+</div>
+
+<p>
+Imagine the policy which one could create for this system. Notice that \((1,0)\) has the same state as \((3,0)\). Since the two are indistinguishable a simple policy choosing only the single <i>best</i> action for a given state would either choose left for both or right for both - thus for three of the \(8\) possible starting positions it would never be able to reach the goal.
+</p>
+
+<div class="svgcontainer-1-2">
+<svg viewBox="0 0 100 50" preserveAspectRation="none">
+    <polygon points="0,0 20,0 20,20 0,20" style="fill:white;stroke:black;"/>
+    <polygon points="20,0 40,0 40,20 20,20" style="fill:white;stroke:black;"/>
+    <polygon points="40,0 60,0 60,20 40,20" style="fill:white;stroke:black;"/>
+    <polygon points="60,0 80,0 80,20 60,20" style="fill:white;stroke:black;"/>
+    <polygon points="80,0 100,0 100,20 80,20" style="fill:white;stroke:black;"/>
+
+    <polygon points="0,20 20,20 20,40 0,40" style="fill:white;stroke:black;"/>
+    <polygon points="40,20 60,20 60,40 40,40" style="fill:white;stroke:black;"/>
+    <polygon points="80,20 100,20 100,40 80,40" style="fill:white;stroke:black;"/>
+
+    <circle cx="50" cy="30" r="5" style="fill:yellow"/>
+
+    <text x="1" y="5" font-size="5">0,0</text>
+    <text x="21" y="5" font-size="5">1,0</text>
+    <text x="41" y="5" font-size="5">2,0</text>
+    <text x="61" y="5" font-size="5">3,0</text>
+    <text x="81" y="5" font-size="5">4,0</text>
+    <text x="1" y="25" font-size="5">0,1</text>
+    <text x="41" y="25" font-size="5">2,1</text>
+    <text x="81" y="25" font-size="5">4,1</text>
+
+    <text x="6" y="11" font-size="5">→ </text>
+    <text x="26" y="11" font-size="5">→ </text>
+    <text x="48" y="11" font-size="5">↓</text>
+    <text x="66" y="11" font-size="5">→ </text>
+    <text x="86" y="11" font-size="5">← </text>
+    <text x="8" y="31" font-size="5">↑</text>
+    <text x="46" y="31" font-size="5"></text>
+    <text x="88" y="31" font-size="5">↑</text>
+</svg> 
+</div>
+
+
+<p>
+As you can see there is an infinite loop between \((3,0)\) and \((4,0)\). If our policy learns to take on probability distributions, however, we would have \((1,0)\) and \((3,0)\) both have a 50/50 chance of east/west. Thus preventing infinite loops without a reward.
+</p>
+
+<h3 id="greedy_policy">When is greedy \(\pi(s,a)\) better?</h3>
+
+<p>
+Now let's consider a more difficult problem than the one detailed <a href="#policyprobability">above</a>. Think of an agent in out pred/prey model above weighing the options when seeing prey in front of them - without context this prey could be moving leftwards, rightwards, away from, or towards the predator. Assuming these all occur with relatively equal probability then \(\pi(s,a)\) should output about \(33\%\) for each of the actions <tt>left</tt>, <tt>right</tt>, and <tt>forward</tt>. Unfortunately if your policy chooses one of these three at each time step with no memory of past states then you will keep randomly picking one until your prey inevitably escapes. Here it would almost certainly be better to choose one of the three more consistently with a greedy approach. This option decreases the exploration of the environment since the agent does not try new actions until one fails enough for gradient descent to decrease its value substantially. As such this approach is generally employed as an \(\epsilon\)-greedy approach where with probability \(\epsilon\) a random action is taken instead of the action with the highest \(Q\) value.
+</p>
+
+<p>
+Another concern is that since about \(100\) timesteps elapse between a creature seeing prey and getting the reward for catching it, the reward has been discounted significantly. As such the difference between immediately pursuing the prey and doing something else for one timestep is insignificant, it's \(\gamma^n\) versus \(\gamma^{n+1}\) - negligable for large \(n\). If you are constructing your policy as a <a href="https://en.wikipedia.org/wiki/Softmax_function"><tt>softmax</tt></a> over the \(Q\) values you will find that almost all actions are predicted as "<i>best</i>" with almost equal probability. This is because softmax cares about the <i>absolute</i> difference between values, not the <i>relative</i> difference. Consider the example below:
+</p>
+
+
+<div class="svgcontainer-2-3">
+<svg viewBox="0 0 100 60" preserveAspectRation="none">
+    <polygon points="0,0 20,0 20,20 0,20" style="fill:white;stroke:black;"/>
+    <polygon points="20,0 40,0 40,20 20,20" style="fill:white;stroke:black;"/>
+    <polygon points="40,0 60,0 60,20 40,20" style="fill:white;stroke:black;"/>
+  
+    <polygon points="0,20 20,20 20,40 0,40" style="fill:white;stroke:black;"/>
+    <polygon points="20,20 40,20 40,40 20,40" style="fill:white;stroke:black;"/>
+    <polygon points="40,20 60,20 60,40 40,40" style="fill:white;stroke:black;"/>
+  
+    <polygon points="0,40 20,40 20,60 0,60" style="fill:white;stroke:black;"/>
+    <polygon points="20,40 40,40 40,60 20,60" style="fill:white;stroke:black;"/>
+    <polygon points="40,40 60,40 60,60 40,60" style="fill:white;stroke:black;"/>
+  
+
+    <text x="68" y="29" font-size="5">n</text>
+    <text x="65" y="31" font-size="10">...</text>
+  
+    <polygon points="80,0 100,0 100,20 80,20" style="fill:white;stroke:black;"/>
+    <polygon points="80,20 100,20 100,40 80,40" style="fill:white;stroke:black;"/>
+    <polygon points="80,40 100,40 100,60 80,60" style="fill:white;stroke:black;"/>
+  
+    <circle cx="90" cy="30" r="5" style="fill:yellow"/>
+
+    <polygon points="5,25 5,35 15,30" style="fill:red;stroke:black;stroke-width:1;"/>
+
+    <polygon points="9,22 11,22 11,18 12,18 10,15 8,18 9,18" style="fill:blue;stroke:black;stroke-width:0.3;"/>
+
+    <polygon points="9,38 11,38 11,42 12,42 10,45 8,42 9,42" style="fill:blue;stroke:black;stroke-width:0.3;"/>
+
+    <polygon points="18,29 18,31 22,31 22,32 25,30 22,28 22,29" style="fill:blue;stroke:black;stroke-width:0.3;"/>
+
+    <text x="88.5" y="31.5" font-size="5">R</text>
+    <text x="88" y="11.5" font-size="3">γR</text>
+    <text x="88" y="51.5" font-size="3">γR</text>
+    
+    <text x="47" y="11.5" font-size="3">γ<tspan baseline-shift = "super">n</tspan>R</text>
+    <text x="46" y="31.5" font-size="3">γ<tspan baseline-shift = "super">n-1</tspan>R</text>
+    <text x="47" y="51.5" font-size="3">γ<tspan baseline-shift = "super">n</tspan>R</text>
+    
+    <text x="26" y="11.5" font-size="3">γ<tspan baseline-shift = "super">n+1</tspan>R</text>
+    <text x="27" y="31.5" font-size="3">γ<tspan baseline-shift = "super">n</tspan>R</text>
+    <text x="26" y="51.5" font-size="3">γ<tspan baseline-shift = "super">n+1</tspan>R</text>
+    
+    <text x="6" y="11.5" font-size="3">γ<tspan baseline-shift = "super">n+2</tspan>R</text>
+    <text x="6" y="51.5" font-size="3">γ<tspan baseline-shift = "super">n+2</tspan>R</text>
+    
+
+</svg> 
+</div>
+
+<p>
+For any value of \(R\) we can choose an \(n\) large enough such that the difference in \(Q\) value between the up/down and forward actions is less than any desired small value \(\epsilon\). As such any fixed probabilistic policy \(\pi\) will choose each action with about equal probability. Using this \(\pi\) will therefore result in a random walk for some initial set of timesteps. In our environment this may be long enough to allow the goal (prey) to escape.
+</p>
+
+<h3>Greedy versus Probabilistic</h3>
+<p>
+Experimenting with both policies I found that probabilistic provided greatly improved exploration and training speed compared to \(\epsilon\)-greedy, but eventually performed suboptimally once all the \(Q\) values became relatively close and the predators became indecisive. Greedy was slow to learn, but performed better at late stage. Mixing the two may prove to be the best choice, for example:
+
+$$ \pi(s,a) = \alpha_t \pi_g(s,a) + (1-\alpha_t) \pi_p(s,a) $$
+
+Where \(\alpha_t\) decreases with time.
+
+</p>
+
+<p>
+However, if you're familiar with ML you may also be familiar with the common technique of using <i>temperature</i> to adjust the confidence of the highest scored class or action. Softmax is given by:
+$$ softmax(a)_i = \frac{e^{-a_i}}{\sum_j e^{-a_j}} $$
+where \(a\) is your array of action scores.
+
+If we consider a temperature \(T\) and adjust our formula to be:
+
+$$ softmax(a)_i = \frac{e^{-\frac{a_i}{T}}}{\sum_j e^{-\frac{a_j}{T}}} $$
+
+given that \( e^{\frac{x}{T}} = {\left(e^{\frac{1}{T}}\right)}^{x} \) we can choose a temperature \(T = \frac{1}{\mbox{log}(b)} \) and rewrite softmax as:
+
+
+$$ softmax(a)_i = \frac{b^{-a_i}}{\sum_j b^{-a_j}} $$
+
+Lower values of \(b\) make the output probability distribution of softmax closer to uniform. In the extreme case of \(b = 1\) we will have a uniform probability distribution over \(a_i\). Thus a high temperature gives an emphasis on <i>exploration</i> of new states whereas a low temperature an emphasis on <i>exploitation</i> of known rewards.
+
+</p>
+
+</p></p>
+        </div>
+    </div>
+
+    <hr>
+    <!-- Footer -->
+    <footer>
+        <div class="row">
+            <div class="col-lg-12">
+                <p>Copyright &copy; Sumner Hearth 2017</p>
+            </div>
+        </div>
+    </footer>
+</div>
+<!-- /.container -->
+
+
+    
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+<!-- Prettify -->
+<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+</body>
+</html>
