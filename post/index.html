@@ -3,18 +3,15 @@
 <head></head>
 <body onload="redirect_me()">
 	<script>
-	function getUrlVars() {
-	    var vars = {};
+
+	function redirect_me(){
+		var vars = {};
 	    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
 	        vars[key] = value;
 	    });
-	    return vars;
-	}
-
-	function redirect_me(){
-		var myvars = getUrlsVars();
-		console.log(myvars);
-		var postid = myvars["id"];
+	    
+		console.log(vars);
+		var postid = vars["id"];
 
 		if (postid == "2") {
 			window.location.replace("../pred_prey.html");
