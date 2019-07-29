@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<script>
+function getUrlVars() {
+    var vars = {};
+    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+        vars[key] = value;
+    });
+    return vars;
+}
+
+var postid = getUrlsVars()["id"];
+
+if (postid == "2") {
+	window.location.replace("../pred_prey.html");
+} else if (postid == "3") {
+	window.location.replace("../quantum_computing.html");
+}
+
+</script>
