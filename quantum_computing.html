@@ -1,0 +1,429 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="author" content="Sumner Hearth" />
+    <meta property="og:image" content="/static/img/latex-image-1-2018-01-09-023244.png" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Introduction to Quantum Computing" />
+    <meta property="og:description" content="A quick overview of Quantum Mechanics, Quantum Computing, and a library I&#39;ve been developing to simulate calculations on your home computer." />
+    <meta property="fb:app_id" content="825006557706123" />
+
+    <title>Introduction to Quantum Computing - Wx + b</title>
+    <!-- Bootstrap Core CSS -->
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!--<link href="/static/css/blogstyle.css" rel="stylesheet">-->
+    <!--<link href="/static/css/loginform.css" rel="stylesheet">-->
+    <!--<link href="/static/css/post.css" rel="stylesheet">-->
+    <link href="/static/css/blogstyle.css" rel="stylesheet">
+    <link href="/static/css/loginform.css" rel="stylesheet">
+    <link href="/static/css/post.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <!--<link href="/static/css/modern-business.css" rel="stylesheet">-->
+    <link href="/static/css/modern-business.css" rel="stylesheet">
+
+    <link rel="icon" href="/static/img/predprey-2017-10-20-060958.png">
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+
+
+</head>
+<body>
+    <!-- Navigation -->
+<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            
+            <a class="navbar-brand" href="/">
+                <i><b>W</b>x + b</i>
+            </a>
+        </div>
+        
+
+    </div>
+    <!-- /.container -->
+</nav>
+
+    
+<!-- Page Content -->
+<div class="container">
+
+    <div class="row blogsnippet">
+        <div class="col-lg-10 col-lg-offset-1 ">
+            <h1>Introduction to Quantum Computing</h1>
+            
+            <hr>
+            <p><h2>Introduction</h2>
+<p>
+Boiled down, quantum computation allows programmers to efficiently compute matrix multiplications on large spaces in constant time. All of the implications of this are not immediately apparent. Exploiting various quirks and properties of quantum systems can allow for computations to be performed before their dependencies are resolved (thus seeming to break causality), vast input spaces to be analyzed in a single operation, and encryptions methods rendered obsolete. In this post I will try to explain a little about Quantum Mechanics (if you are familiar you may <a href="#computing">skip that section</a>) then dive into common quantum computation idioms and techniques. Furthermore I'll share an open source python library I have been developing called <a href="https://github.com/Renmusxd/QIP">QIP</a> so you can test algorithms on your own computer with a tensorflow-like api.
+</p>
+
+<p>
+I will be referencing Griffiths <i>Introduction to Quantum Mechanics</i> (ISBN:
+1107179866) for the physics material and <i>Quantum Computation and Quantum Information</i> by Nielsen and Chuang (ISBN 9781107002173) for the Quantum Computing material.
+</p>
+
+<h2>Quantum Mechanics in a nutshell</h2>
+<p>
+Quantum Mechanics has many properties which may be very unintuitive at first, but I aim to give a quick summary of the important points and intuition behind them so that Quantum Computing doesn't seem like magic.
+</p>
+
+<p>
+The first hurdle to consider is that of the <a href="https://en.wikipedia.org/wiki/Wave_function">wave functions</a>. A wave function is a function, commonly written \(\psi\), which maps to a complex number. For example you may look at the wave function with respect to position \(\psi(x)\). The classical intuition of the wave function is that \(\lvert\psi(x)\rvert^2\) is the probability of finding the particle at position \(x\). Since the sum of all probabilities must add up to one, you may see a lot of normalization constants like \(\frac{1}{\sqrt{2}}\) floating around.
+</p>
+
+<p>
+These wave functions must obey the Schrödinger Equation:
+\[ i \hbar \frac{\partial}{\partial_t} \psi(\vec{x},t) = \hat{H}\psi(\vec{x},t) \]
+</p>
+
+<p>
+Here, \(\hat{H}\) is the hamiltonian of the system - the total energy <i>operator</i>. An operator is a mathematical object which takes a wave function and returns another, possibly scaled by some value, for example the operator \(\hat{Q}\) on \(\psi_1\) may give \(\hat{Q}\psi_1 = \alpha \psi_2\) (I will usually denote operators with a hat to distinguish them from constants, though keep in mind derivatives are operators as well). The hamiltonian will take a wave function with energy \(E\), let's call it \(\psi_E\), and return that wave function multiplied by \(E\). Since the hamiltonian is an operator which scales certain functions by a fixed value, those functions are said to be the <a href="https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors"><i>eigenfunctions</i></a> of the hamiltonian.
+\[ \hat{H}\psi_E = E \psi_E \]
+
+These operators are also linear, so given \(\psi_{E_1}\) and \(\psi_{E_2}\) with respective energies we find that operating on \(\psi = \frac{1}{\sqrt{2}}(\psi_{E_1} + \psi_{E_2})\) gives
+\[\hat{H}\psi =\frac{1}{\sqrt{2}}\hat{H}(\psi_{E_1} + \psi_{E_2}) = \frac{1}{\sqrt{2}}(E_1 \psi_{E_1} + E_2 \psi_{E_2})\]
+
+Notice that \(\frac{1}{\sqrt{2}}(\psi_{E_1} + \psi_{E_2})\) is not "<i>a wave function with energy</i> \(E_1 + E_2\)" since 
+\[\frac{1}{\sqrt{2}}\hat{H}(\psi_{E_1} + \psi_{E_2}) = \frac{1}{\sqrt{2}}( E_1\psi_{E_1} + E_2\psi_{E_2}) \neq \frac{1}{\sqrt{2}}(E_1 + E_2)(\psi_{E_1} + \psi_{E_2})\]
+
+Thus \(\frac{1}{\sqrt{2}}(\psi_{E_1} + \psi_{E_2})\) is <i>not</i> an eigenfunction of \(\hat{H}\) and does not have an associated eigenvalue (thus no single associated energy).
+<br>
+This is all to say that the energy of \(\psi_{E_1} + \psi_{E_2}\) is not \(E_1 + E_2\) but rather \(E_1\) <b>or</b> \(E_2\) (more on this later).
+</p>
+
+<p>
+These eigenfunctions are orthogonal, meaning we can create a basis out of them and switch over to doing linear algebra to avoid differential equations.
+</p>
+
+<p>
+Let the wave function \(\psi_{E_1}\) be the vector \( \left(\begin{smallmatrix}1\\0\end{smallmatrix}\right) \) and let \(\psi_{E_2}\) be \( \left(\begin{smallmatrix}0\\1\end{smallmatrix}\right) \). We may now write our hamiltonian as \[\hat{H}=\begin{bmatrix}E_1 & 0\\0 & E_2\end{bmatrix}\]
+
+<br>
+A state like \(\psi = \alpha \psi_{E_1} + \beta \psi_{E_2}\) could thus be written as \(\psi = \alpha \left(\begin{smallmatrix}1\\0\end{smallmatrix}\right) + \beta \left(\begin{smallmatrix}0\\1\end{smallmatrix}\right) = \left(\begin{smallmatrix} \alpha \\ \beta \end{smallmatrix}\right) \)
+<br>
+Using the Hamiltonian as an operator is simply matrix multiplication:
+
+\[\hat{H} \left(\begin{smallmatrix}\alpha \\ \beta \end{smallmatrix}\right)=\begin{bmatrix}E_1 & 0\\0 & E_2\end{bmatrix} \left(\begin{matrix} \alpha \\ \beta \end{matrix}\right) = \alpha E_1 \left(\begin{matrix} 1\\ 0 \end{matrix}\right) + \beta E_2 \left(\begin{matrix} 0 \\ 1\end{matrix}\right) \]
+Which agrees with
+\[\hat{H}(\alpha \psi_{E_1} + \beta \psi_{E_2}) = \alpha E_1 \psi_{E_1} + \beta E_2 \psi_{E_2}\]
+
+
+You can see that all the previously described properties of \(\hat{H}\) are preserved. We will be using this matrix notation for all the Quantum Computing operations described hereafter, though instead of \( \left(\begin{smallmatrix}1\\0\end{smallmatrix}\right) \) and \( \left(\begin{smallmatrix}0\\1\end{smallmatrix}\right) \) for the energy eigenfunctions we will use \(\lvert 0 \rangle\) and \(\lvert 1 \rangle\) (the zero bit is the \(\psi_{E_1}\) state and the one bit is the \(\psi_{E_2}\)). This is called <a href="https://en.wikipedia.org/wiki/Bra%E2%80%93ket_notation">braket</a> notation.
+</p>
+
+<p>
+One last note to wrap up braket notation is multiple particles, given two particles in states \(\lvert a \rangle\) and \(\lvert b \rangle\) we will write the combined state as \(\lvert a b \rangle\) (order sensitive). This is simply the product of each state: \(\lvert a b \rangle = \lvert a \rangle \otimes \lvert b \rangle\). Operators must explicitly operate on one of the particles, for example \(\hat{Q}^{(0)}\) may operate on the first particle (switching over to zero indexing to get into a CS mindset) . The remaining indices can be thought of being operated on by the identity: \(\hat{Q}^{(0)} \rightarrow \hat{Q} \otimes \mathbb{I}\)
+</p>
+<p>
+Let's say \[\hat{Q} =\frac{1}{\sqrt{2}}\begin{bmatrix}1 & 1 \\ 1 & -1\end{bmatrix}\]
+Where the factor of \(\frac{1}{\sqrt{2}}\) is a normalization constant so that any wave function operated on by \(\hat{Q}\) is still normalized.
+</p>
+<p>
+Thus \(\hat{Q}^{(0)} \lvert 0 b \rangle \implies (\hat{Q}^{(0)} \lvert 0 \rangle) \otimes \lvert b \rangle = \frac{1}{\sqrt{2}}(\lvert 0 \rangle + \lvert 1 \rangle) \otimes \lvert b \rangle = \frac{1}{\sqrt{2}}(\lvert 0 b \rangle + \lvert 1 b \rangle) \). 
+</p>
+
+<p>
+Finally, let's discuss measurement. I said before that \(\lvert\psi(x)\rvert^2\) was the probability of finding the particle in position \(x\). This can be done for any <i>state</i> of the particle, not just the position. We can get the probability of finding the particle in state \(\psi_0\), given that it's in state \(\psi\), by taking the inner product between the two functions: \[ \int_x \psi_0^\dagger(x) \psi(x) dx \] For the \(x_0\) position we have \(\psi_0(x) = \psi(x) \delta(x - x_0)\) thus giving \[\int_x  \psi(x)^\dagger \delta(x - x_0) \psi(x) dx = \lvert\psi(x_0)\rvert^2\] See <a href="https://en.wikipedia.org/wiki/Dirac_delta_function">Dirac delta functions</a> if this doesn't follow.
+</p>
+
+<p>
+This inner product works perfectly with our orthogonal vectors of states, the inner product of two states \(\lvert a \rangle\) and \(\lvert b \rangle\) is written \( \langle a \vert b \rangle\) and can be calculated using the dot product on the vector basis discussed earlier. Thus \(\langle 0 \vert 0 \rangle = 1\) and \(\langle 0 \vert 1 \rangle = 0\). As an example, if we wanted to find the probability of the first particle being a zero in the \(\psi = \frac{1}{\sqrt{2}}(\lvert 0 b \rangle + \lvert 1 b \rangle ) \) from before, we simple take the inner product of all possible states where the first is a zero (let's call this \(\psi_0 = \frac{1}{\sqrt{2}}(\lvert 0 0 \rangle + \lvert 0 1 \rangle)\)
+Now the inner product 
+\[\langle \psi_0 \vert \psi \rangle = \frac{1}{2}( \langle 0 0 \rvert + \langle 0 1 \rvert ) (\lvert 0 b \rangle + \lvert 1 b \rangle) \]
+
+\[ = \frac{1}{2} \langle 0 0 \vert 0 b \rangle + \frac{1}{2} \langle 0 1 \vert 0 b \rangle + \frac{1}{2} \langle 0 0 \vert 1 b \rangle + \frac{1}{2} \langle 0 1 \vert 1 b \rangle \]
+
+Since each wave function is orthogonal, keep only the ones which can be equal to one another:
+
+\[ = \frac{1}{2} \langle 0 0 \vert 0 b \rangle + \frac{1}{2} \langle 0 1 \vert 0 b \rangle \]
+
+So if \(b = 0\) then \(\langle \psi_0 \vert \psi \rangle = \frac{1}{2}\) and if \(b = 1\) then \(\langle \psi_0 \vert \psi \rangle = \frac{1}{2}\). So we have concluded that in the state \(\frac{1}{\sqrt{2}}(\lvert 0 b \rangle + \lvert 1 b \rangle )\) there's a 50% chance of finding the first particle in state \(\lvert 0 \rangle\)
+</p>
+<p>
+As a shortcut, whenever we are measuring the "chance that a state occurs" we can simply square the sum of all states in \(\psi\) which meet the criteria. It's the same as dotting with all possibilities since the possibilities which aren't in \(\psi\) simply drop away:
+
+\[ \frac{1}{\sqrt{2}}(\lvert 0 b \rangle + \lvert 1 b \rangle ) \implies \vert \frac{1}{\sqrt{2}}\lvert 0 b \rangle \vert ^2 = \frac{1}{2} \langle 0 b \vert 0 b \rangle = \frac{1}{2} \]
+
+Since we can only measure or observe <i>one</i> of the states in \(\psi\) on any given measurement, that also means that when we measure the energy (or any other observable value) of a state, it can only be the eigenvalue for one of the eigenfunctions present in \(\psi\). So if \(\psi = \sqrt{\frac{1}{3}}\psi_{E_1} + \sqrt{\frac{2}{3}} \psi_{E_2}\) then we have a \(\frac{1}{3}\) chance of measuring the energy \(E_1\) and a \(\frac{2}{3}\) chance of measuring \(E_2\).
+</p>
+
+<p>
+<i>Note: Any physicists who feel as though I may have left out some key topics in quantum (*cough* related to your particular field *cough*) I completely agree. However, I feel like this introduction is sufficient for understanding quantum computing, and that's the goal for this post.</i> 
+</p>
+
+<h2 id="computing">Quantum Computing</h2>
+<p>
+When we consider a quantum computing algorithm, we must first decide how many quantum bits (qubits) we want to work with. These are drawn as wires with gates acting on them. As such any algorithm looks like a classical circuit. Time moves from left to right.
+Below we have a 3-qubit circuit in which the second qubit has the operator \(\hat{Q}\) applied to it.
+</p>
+
+<div class="svgcontainer-1-3">
+<svg viewBox="0 0 100 33" preserveAspectRation="none">
+  <line x1="10" x2="90" y1="10" y2="10" style="stroke:rgb(0,0,0);stroke-width:1"/>
+<line x1="10" x2="90" y1="16.5" y2="16.5" style="stroke:rgb(0,0,0);stroke-width:1"/>
+<line x1="10" x2="90" y1="23" y2="23" style="stroke:rgb(0,0,0);stroke-width:1"/>
+
+<text x="5" y="10" font-size="3">a</text>
+<text x="5" y="17" font-size="3">b</text>
+<text x="5" y="24" font-size="3">c</text>
+
+<polygon points="47,13.5 53,13.5 53,19.5 47,19.5" style="fill:white;stroke:black;stroke-width:0.5"/>
+
+<text x="48.25" y="18.25" font-size="5">Q</text>
+
+</svg>
+</div>
+
+<p>
+\(a\), \(b\), and \(c\) describe the initial condition of the qubit, for example I may write \(\lvert 0 \rangle\) instead and that would mean that the starting state would be \(\lvert 0 0 0 \rangle\)
+</p>
+
+<p>
+The circuit as a whole simply performs \(\hat{Q}^{(1)} \lvert 0 0 0 \rangle \) for some operator \(\hat{Q}\)
+</p>
+
+<p>
+Let's take a commonly used gate as an example, \(H\), the <a href="https://en.wikipedia.org/wiki/Quantum_gate#Hadamard_gate">Hadamard</a> gate (sorry that it happens to share a letter with the Hamiltonian).
+\[H = \frac{1}{\sqrt{2}}\begin{bmatrix}1 & 1 \\ 1 & -1 \end{bmatrix} \]
+Acting on \(\lvert a \rangle\) it gives:
+\[H \lvert 0 \rangle = \frac{1}{\sqrt{2}} (\lvert 0 \rangle + \lvert 1 \rangle) \]
+\[H \lvert 1 \rangle = \frac{1}{\sqrt{2}} (\lvert 0 \rangle - \lvert 1 \rangle) \]
+If we were to take the above 3 qubit circuit with \(\hat{Q}\) substituted with \(H\) we would have: 
+\[H^{(1)} \lvert 0 0 0 \rangle = \frac{1}{\sqrt{2}} ( \lvert 0 0 0 \rangle + \lvert 0 1 0 \rangle ) \]
+</p>
+
+<p>
+Now if we imagine concatenating two copies of the circuit:
+
+
+<div class="svgcontainer-1-3">
+<svg viewBox="0 0 100 33" preserveAspectRation="none">
+  <line x1="10" x2="90" y1="10" y2="10" style="stroke:rgb(0,0,0);stroke-width:1"/>
+<line x1="10" x2="90" y1="16.5" y2="16.5" style="stroke:rgb(0,0,0);stroke-width:1"/>
+<line x1="10" x2="90" y1="23" y2="23" style="stroke:rgb(0,0,0);stroke-width:1"/>
+
+<text x="5" y="10" font-size="3">0</text>
+<text x="5" y="17" font-size="3">0</text>
+<text x="5" y="24" font-size="3">0</text>
+
+<polygon points="32,13.5 38,13.5 38,19.5 32,19.5" style="fill:white;stroke:black;stroke-width:0.5"/>
+<text x="33.25" y="18.25" font-size="5">Q</text>
+<polygon points="62,13.5 68,13.5 68,19.5 62,19.5" style="fill:white;stroke:black;stroke-width:0.5"/>
+<text x="63.25" y="18.25" font-size="5">Q</text>
+</svg>
+</div>
+
+\[H^{(1)}H^{(1)} \lvert 0 0 0 \rangle = H^{(1)} \frac{1}{\sqrt{2}} ( \lvert 0 0 0 \rangle + \lvert 0 1 0 \rangle ) \]
+\[= \frac{1}{2} ( (\lvert 0 0 0 \rangle + \lvert 0 1 0 \rangle) + (\lvert 0 0 0 \rangle - \lvert 0 1 0 \rangle)) \]
+\[ = \lvert 0 0 0 \rangle \]
+So \(H^2\) is the identity. This gate is very useful since it allows us to put circuits into superpositions of each state, thus allowing what seems like the <i>parallel</i> evaluation of the circuit across each possible state. The reality is more complex since only one state can be measured in the end independent of how many states were present during execution. If this were a classical computer executing upon each state you could consider each parallel execution independently and each would provide its own output.
+</p>
+
+<p>
+Quantum circuits are entirely defined by a series of these gates, each a <a href="https://en.wikipedia.org/wiki/Unitary_matrix">unitary transformation</a> (keeps the sum of probabilities at \(1\)). This can pose some problems because unitary matrices have inverses, they don't lose information. Classical gates cannot necessarily be undone - consider the OR gate: If it outputs a 1 you don't know whether the input was 01, 10, or 11. Furthermore qubits adhere to the <a href="https://en.wikipedia.org/wiki/No-cloning_theorem">no-cloning theorem</a> which, put simply, states that we cannot make copies of an unknown state \(\lvert \psi \rangle\) whereas in classical computers we can simply branch the wire in half and use each half in its own computations. Together we can imagine it means that each step of the computation will use the same set of \(n\) qubits as when you started. Reasoning about quantum circuits can be difficult, and constructing them perhaps even more so due to these barriers.
+</p>
+
+<p>
+One tool at our disposal to start building these circuits is the control "gate", it is effectively an extention which can be made to another gate to turn it on or off based on the state of a given qubit. The general formula for the control gate \(C(\hat{Q})\)
+\[ C(\hat{Q}) = \begin{bmatrix} 
+1 & 0 & 0 & 0 \\
+0 & 1 & 0 & 0 \\
+0 & 0 & q_{00} & q_{01} \\
+0 & 0 & q_{10} & q_{11}
+ \end{bmatrix} \]
+Each row/column represents one of the possible combinations of states of the two qubits: \(\lvert 0 0 \rangle\), \(\lvert 0 1 \rangle\), \(\lvert 1 0 \rangle\), and \(\lvert 1 1 \rangle\).
+
+ In a circuit it is depicted as follows:
+
+<div class="svgcontainer-1-3">
+<svg viewBox="0 0 100 33" preserveAspectRation="none">
+  <line x1="10" x2="90" y1="10" y2="10" style="stroke:rgb(0,0,0);stroke-width:1"/>
+<line x1="10" x2="90" y1="16.5" y2="16.5" style="stroke:rgb(0,0,0);stroke-width:1"/>
+<line x1="10" x2="90" y1="23" y2="23" style="stroke:rgb(0,0,0);stroke-width:1"/>
+
+<text x="5" y="10" font-size="3">a</text>
+<text x="5" y="17" font-size="3">b</text>
+<text x="5" y="24" font-size="3">c</text>
+
+<line x1="50" y1="10" x2="50" y2="17" style="stroke:rgb(0,0,0);stroke-width:0.5"/>
+<circle cx="50" cy="10" r="1.5"/>
+<polygon points="47,13.5 53,13.5 53,19.5 47,19.5" style="fill:white;stroke:black;stroke-width:0.5"/>
+
+
+<text x="48.25" y="18.25" font-size="5">Q</text>
+
+</svg>
+</div>
+
+So the CNOT gate will operate on 2 qubits (\(a\) and \(b\)), and effectively operates as "<i>if qubit \(a\) is 0 then leave \(b\) alone, else negate \(b\)</i>":
+\[ \mbox{CNOT} = \begin{bmatrix} 
+1 & 0 & 0 & 0 \\
+0 & 1 & 0 & 0 \\
+0 & 0 & 0 & 1 \\
+0 & 0 & 1 & 0 
+ \end{bmatrix} \]
+
+For example:
+
+\[\mbox{CNOT} ( \alpha \lvert 0 0 \rangle + \beta \lvert 1 1 \rangle ) = \alpha \lvert 0 0 \rangle + \beta \lvert 1 0 \rangle \]
+</p>
+
+<p>
+Let's look at a counterintuitive example which shows how mixing all the above information can lead to useful calculations. First let's assume we have a SWAP gate which acts on two sets of \(m\) qubits \(\psi_m\) and \(\phi_m\). The swap gate simply swaps the states between the qubits: \(\mbox{SWAP} \lvert \psi_m \phi_m \rangle = \lvert \phi_m \psi_m \rangle\)
+</p>
+
+<p>
+Let's now examine the following circuit (where × positions mean SWAP):
+<div class="svgcontainer-1-3">
+<svg viewBox="0 0 100 33" preserveAspectRation="none">
+  <line x1="10" x2="90" y1="10" y2="10" style="stroke:rgb(0,0,0);stroke-width:1"/>
+<line x1="10" x2="90" y1="16.5" y2="16.5" style="stroke:rgb(0,0,0);stroke-width:1"/>
+<line x1="10" x2="90" y1="23" y2="23" style="stroke:rgb(0,0,0);stroke-width:1"/>
+
+<text x="5" y="10" font-size="3">0</text>
+<text x="5" y="17" font-size="3">ψ</text>
+<text x="5" y="24" font-size="3">φ</text>
+
+<polygon points="27,6.5 33,6.5 33,13.5 27,13.5" style="fill:white;stroke:black;stroke-width:0.5"/>
+<text x="28.25" y="11.5" font-size="5">H</text>
+
+<line x1="50" y1="10" x2="50" y2="23" style="stroke:rgb(0,0,0);stroke-width:0.5"/>
+<circle cx="50" cy="10" r="1.5"/>
+<text x="46.45" y="19.5" font-size="12">×</text>
+<text x="46.45" y="26" font-size="12">×</text>
+
+
+<polygon points="67,6.5 73,6.5 73,13.5 67,13.5" style="fill:white;stroke:black;stroke-width:0.5"/>
+<text x="68.25" y="11.5" font-size="5">H</text>
+
+</svg>
+</div>
+
+Let's work out the math for the end state:
+\[H^{(0)} \lvert 0 \psi \phi \rangle = \frac{1}{\sqrt{2}}(\lvert 0 \psi \phi \rangle + \lvert 1 \psi \phi \rangle) \]
+\[\mbox{CSWAP}\frac{1}{\sqrt{2}}(\lvert 0 \psi \phi \rangle + \lvert 1 \psi \phi \rangle) = \frac{1}{\sqrt{2}} (\lvert 0 \psi \phi \rangle + \lvert 1  \phi \psi \rangle)\]
+\[ H^{(0)} \frac{1}{\sqrt{2}} (\lvert 0 \psi \phi \rangle + \lvert 1  \phi \psi \rangle) = \frac{1}{2}((\lvert 0 \psi \phi \rangle + \lvert 1  \psi \phi \rangle) + (\lvert 0 \phi \psi \rangle - \lvert 1  \phi \psi \rangle) )\]
+This state may seem like nonsense at first, but now let's consider measuring the probability that the zeroth qubit is in the \(\lvert 0 \rangle\) state.
+\[\frac{1}{2}((\lvert 0 \psi \phi \rangle + \lvert 1  \psi \phi \rangle) + (\lvert 0 \phi \psi \rangle - \lvert 1  \phi \psi \rangle) )\]
+\[= \frac{1}{2}(\lvert 0 \rangle \otimes (\lvert \psi \phi \rangle + \lvert \phi \psi \rangle) + \lvert 1 \rangle \otimes ( \lvert \psi \phi \rangle  - \lvert \phi \psi \rangle) )\]
+Square the coefficient for \(\lvert 0 \rangle\) to measure:
+\[\mathbb{P}(\lvert 0 \rangle) = \vert \frac{1}{2} (\lvert \psi \phi \rangle + \lvert \phi \psi \rangle) \vert^2 \]
+\[ = \frac{1}{4} (\langle \psi \phi \vert \psi \phi \rangle + \langle \phi \psi \vert \phi \psi \rangle + \langle \phi \psi \vert \psi \phi \rangle + \langle \psi \phi \vert \phi \psi \rangle) \]
+\[= \frac{1}{4} (2 + \langle \phi \psi \vert \psi \phi \rangle + \langle \psi \phi \vert \phi \psi \rangle) \]
+\(\langle \phi \psi \vert \psi \phi \rangle = \langle \psi \phi \vert \phi \psi \rangle\)
+\[= \frac{1}{4} (2 + 2 \langle \phi \psi \vert \psi \phi \rangle) \]
+\(\langle \phi \psi \vert \psi \phi \rangle = \langle \phi \vert \psi \rangle \langle \psi \vert \phi \rangle = \vert \langle \psi \vert \phi \rangle \vert^2 \)
+\[\mathbb{P}(\lvert 0 \rangle) = \frac{1}{2} + \frac{1}{2} \vert \langle \psi \vert \phi \rangle \vert^2 \]
+The probability of \(\lvert 0 \rangle\) is a function of the inner product of two \(m\) dimensional vectors, and yet was accessible in constant time (3 operations)! Notice, however, that we cannot actually measure the probability of \(\lvert 0 \rangle\) in a single action, and would have to make repeated (possibly parallel) measurements to get to an arbitrary precision, but for sufficiently large \(m\) this could be more efficient than a classical computer; though the real strength would be from using this as part of a larger quantum algorithm.
+
+</p>
+
+<h2>"Quantum Computing" at Home</h2>
+
+<p>
+I have been working on the <a href="https://github.com/Renmusxd/QIP"><tt>qip</tt></a> library for the last few months, its goal is to provide a tensorflow-like api for quantum computer simulations.
+</p>
+
+<p>
+Let's examine the CSWAP example from above in the qip library. We define 3 groups of qubits (<tt>q1</tt>, <tt>q2</tt>, and <tt>q3</tt>). the first represents n=1 qubits whereas the next two will each represent n=2 qubits. Thus giving a total of 5 qubits (currently the library reasonably supports up to about 29 qubits using 24Gb of RAM, though 5 qubits will take effectively no resources). 
+</p>
+<pre>
+from qip.qip import Qubit, Measure
+from qip.operators import C, H, Swap
+
+q1 = Qubit(n=1)
+q2 = Qubit(n=2)
+q3 = Qubit(n=2)
+
+h1 = H(q1)
+c1, c2, c3 = C(Swap)(h1, q2, q3)
+mh1 = H(c1)
+
+m1 = Measure(mh1)
+</pre>
+<p>
+We see here that instead of specifying the index of the qubit to which we are applying each operation we use the output qubit itself. So <tt>H</tt> is applied to the <tt>q1</tt> qubit, which in turn is used in the CSWAP (constructed by appying <tt>C</tt> to the <tt>SwapOp</tt>) along with the original <tt>q2</tt> and <tt>q3</tt>. The first input is used as the control with the second two forwarded to whatever operation is being controlled. We then apply <tt>H</tt> to the new control qubit state. Finally to simulate measurement we use the <tt>Measure</tt> operation. 
+</p>
+
+<p>
+We have constructed <tt>m1</tt> which contains the entire circuit defined up to that point, we may now <i>run</i> <tt>m1</tt> to measure the first qubit using a variety of input states. 
+</p>
+
+<p>
+Below we choose the following inputs:
+
+\[ \lvert q1 \rangle = 1.0 \lvert 0 \rangle + 0.0 \lvert 1 \rangle = \lvert 0 \rangle \]
+\[ \lvert q2 \rangle = 0.0 \lvert 0 0 \rangle + 0.0 \lvert 0 1 \rangle + 0.0 \lvert 1 0 \rangle + 1.0 \lvert 1 1 \rangle = \lvert 1 1 \rangle  \]
+\[ \lvert q3 \rangle = ~...~ = \lvert 0 0 \rangle  \]
+</p>
+<pre>
+out, classic = m1.run(feed={q1: [1.0, 0.0], 
+                            q2: [0.0, 0.0, 0.0, 1.0], 
+                            q3: [1.0, 0.0, 0.0, 0.0]})
+
+measured, measured_prob = classic[m1]
+</pre>
+
+<p>
+<tt>out</tt> gives the quantum state after the circuit is executed, note that since one of the qubits is measured the quantum state only include 4 qubits (<tt>q2 + q3</tt>) and thus \(2^4\) complex values in the array <tt>out</tt> (for each combination of \(\lvert a b c d \rangle\) ). 
+</p>
+<p>
+The <tt>classic</tt> dictionary contains a mapping from each measured object (here just <tt>m1</tt>) to the value recovered as well as the probability of obtaining that value (which is not available in actual quantum computers but is useful nonetheless). So we expect that given
+\[\mathbb{P}(\lvert 0 \rangle) = \frac{1}{2} + \frac{1}{2} \vert \langle \psi \vert \phi \rangle \vert^2 \] 
+and 
+\[\langle q_2 \vert q_3 \rangle = \langle 1 1 \vert 0 0 \rangle = 0\]
+Thus \(\mathbb{P}(\lvert 0 \rangle) = \frac{1}{2}\)
+</p>
+<p>
+We therefore expect <tt>measured</tt> to be either 0 or 1 with equal probability and <tt>measured_prob</tt> to always be 0.5.
+</p>
+<h2>Summary and Conclusion</h2>
+<p>
+This post does not aim to provide someone with all the tools necessary to begin writing their own quantum algorithms - rather it aims to provide some degree of background on how quantum computers operate. Moving forward I hope to post some more in-depth articles where I can provide some concrete examples of applications of quantum algorithms which can outperform their classical counterparts - specifically Grover's Algorithm for fast database lookup and Shor's Algorithm for finding the prime factors of an integer. 
+</p></p>
+        </div>
+    </div>
+
+    <hr>
+    <!-- Footer -->
+    <footer>
+        <div class="row">
+            <div class="col-lg-12">
+                <p>Copyright &copy; Sumner Hearth 2017</p>
+            </div>
+        </div>
+    </footer>
+</div>
+<!-- /.container -->
+
+
+    
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+<!-- Prettify -->
+<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+</body>
+</html>
