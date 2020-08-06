@@ -10,12 +10,12 @@ export class Lattice {
 /**
 * Make a new lattice with `edges`, positive implies antiferromagnetic bonds, negative is
 * ferromagnetic.
-* @param {Uint32Array} edge_a 
-* @param {Uint32Array} edge_b 
-* @param {Float64Array} edge_j 
-* @param {number} transverse 
-* @param {number} beta 
-* @returns {Lattice} 
+* @param {Uint32Array} edge_a
+* @param {Uint32Array} edge_b
+* @param {Float64Array} edge_j
+* @param {number} transverse
+* @param {number} beta
+* @returns {Lattice}
 */
   static new(edge_a: Uint32Array, edge_b: Uint32Array, edge_j: Float64Array, transverse: number, beta: number): Lattice;
 /**
@@ -26,53 +26,53 @@ export class Lattice {
 *
 * # Returns:
 *  * average energy of system
-* @param {number} timesteps 
-* @returns {number} 
+* @param {number} timesteps
+* @returns {number}
 */
   run_quantum_monte_carlo(timesteps: number): number;
 /**
-* @returns {number} 
+* @returns {number}
 */
   get_nvars(): number;
 /**
-* @param {number} i 
-* @returns {boolean} 
+* @param {number} i
+* @returns {boolean}
 */
   get_state(i: number): boolean;
 /**
-* @returns {number} 
+* @returns {number}
 */
   get_n(): number;
 /**
-* @returns {number} 
+* @returns {number}
 */
   get_cutoff(): number;
 /**
-* @param {number} n 
-* @returns {number} 
+* @param {number} n
+* @returns {number}
 */
   get_p_for_n(n: number): number;
 /**
-* @param {number} p 
-* @returns {number | undefined} 
+* @param {number} p
+* @returns {number | undefined}
 */
   get_nvars_for_op(p: number): number | undefined;
 /**
-* @param {number} p 
-* @param {number} i 
-* @returns {number | undefined} 
+* @param {number} p
+* @param {number} i
+* @returns {number | undefined}
 */
   get_nth_op_var_i(p: number, i: number): number | undefined;
 /**
-* @param {number} p 
-* @param {number} i 
-* @returns {boolean | undefined} 
+* @param {number} p
+* @param {number} i
+* @returns {boolean | undefined}
 */
   get_nth_op_var_i_input(p: number, i: number): boolean | undefined;
 /**
-* @param {number} p 
-* @param {number} i 
-* @returns {boolean | undefined} 
+* @param {number} p
+* @param {number} i
+* @returns {boolean | undefined}
 */
   get_nth_op_var_i_output(p: number, i: number): boolean | undefined;
 }

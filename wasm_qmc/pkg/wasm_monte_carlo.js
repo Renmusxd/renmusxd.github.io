@@ -254,10 +254,16 @@ class Lattice {
     * @returns {number | undefined}
     */
     get_nvars_for_op(p) {
-        wasm.lattice_get_nvars_for_op(8, this.ptr, p);
-        var r0 = getInt32Memory0()[8 / 4 + 0];
-        var r1 = getInt32Memory0()[8 / 4 + 1];
-        return r0 === 0 ? undefined : r1 >>> 0;
+        try {
+            const retptr = wasm.__wbindgen_export_1.value - 16;
+            wasm.__wbindgen_export_1.value = retptr;
+            wasm.lattice_get_nvars_for_op(retptr, this.ptr, p);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            return r0 === 0 ? undefined : r1 >>> 0;
+        } finally {
+            wasm.__wbindgen_export_1.value += 16;
+        }
     }
     /**
     * @param {number} p
@@ -265,10 +271,16 @@ class Lattice {
     * @returns {number | undefined}
     */
     get_nth_op_var_i(p, i) {
-        wasm.lattice_get_nth_op_var_i(8, this.ptr, p, i);
-        var r0 = getInt32Memory0()[8 / 4 + 0];
-        var r1 = getInt32Memory0()[8 / 4 + 1];
-        return r0 === 0 ? undefined : r1 >>> 0;
+        try {
+            const retptr = wasm.__wbindgen_export_1.value - 16;
+            wasm.__wbindgen_export_1.value = retptr;
+            wasm.lattice_get_nth_op_var_i(retptr, this.ptr, p, i);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            return r0 === 0 ? undefined : r1 >>> 0;
+        } finally {
+            wasm.__wbindgen_export_1.value += 16;
+        }
     }
     /**
     * @param {number} p
