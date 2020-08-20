@@ -4,6 +4,8 @@ export const memory: WebAssembly.Memory;
 export function __wbg_lattice_free(a: number): void;
 export function lattice_new(a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number): number;
 export function lattice_run_quantum_monte_carlo(a: number, b: number): number;
+export function lattice_run_diagonal_quantum_monte_carlo(a: number, b: number): void;
+export function lattice_run_offdiagonal_quantum_monte_carlo(a: number, b: number): void;
 export function lattice_get_nvars(a: number): number;
 export function lattice_get_state(a: number, b: number): number;
 export function lattice_get_n(a: number): number;
