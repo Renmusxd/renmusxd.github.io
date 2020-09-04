@@ -213,6 +213,36 @@ class Lattice {
         return ret;
     }
     /**
+    * Run only the diagonal parts of a quantum monte carlo simulation.
+    *
+    * # Arguments:
+    * * `timesteps`: number of timesteps to run.
+    * @param {number} timesteps
+    */
+    run_diagonal_quantum_monte_carlo(timesteps) {
+        wasm.lattice_run_diagonal_quantum_monte_carlo(this.ptr, timesteps);
+    }
+    /**
+    * Run only the offdiagonal parts of a quantum monte carlo simulation.
+    *
+    * # Arguments:
+    * * `timesteps`: number of timesteps to run.
+    * @param {number} timesteps
+    */
+    run_offdiagonal_quantum_monte_carlo(timesteps) {
+        wasm.lattice_run_offdiagonal_quantum_monte_carlo(this.ptr, timesteps);
+    }
+    /**
+    * Run only the rvb parts of a quantum monte carlo simulation.
+    *
+    * # Arguments:
+    * * `timesteps`: number of timesteps to run.
+    * @param {number} timesteps
+    */
+    run_rvb_quantum_monte_carlo(timesteps) {
+        wasm.lattice_run_rvb_quantum_monte_carlo(this.ptr, timesteps);
+    }
+    /**
     * @returns {number}
     */
     get_nvars() {

@@ -31,6 +31,30 @@ export class Lattice {
 */
   run_quantum_monte_carlo(timesteps: number): number;
 /**
+* Run only the diagonal parts of a quantum monte carlo simulation.
+*
+* # Arguments:
+* * `timesteps`: number of timesteps to run.
+* @param {number} timesteps
+*/
+  run_diagonal_quantum_monte_carlo(timesteps: number): void;
+/**
+* Run only the offdiagonal parts of a quantum monte carlo simulation.
+*
+* # Arguments:
+* * `timesteps`: number of timesteps to run.
+* @param {number} timesteps
+*/
+  run_offdiagonal_quantum_monte_carlo(timesteps: number): void;
+/**
+* Run only the rvb parts of a quantum monte carlo simulation.
+*
+* # Arguments:
+* * `timesteps`: number of timesteps to run.
+* @param {number} timesteps
+*/
+  run_rvb_quantum_monte_carlo(timesteps: number): void;
+/**
 * @returns {number}
 */
   get_nvars(): number;
@@ -84,6 +108,9 @@ export interface InitOutput {
   readonly __wbg_lattice_free: (a: number) => void;
   readonly lattice_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
   readonly lattice_run_quantum_monte_carlo: (a: number, b: number) => number;
+  readonly lattice_run_diagonal_quantum_monte_carlo: (a: number, b: number) => void;
+  readonly lattice_run_offdiagonal_quantum_monte_carlo: (a: number, b: number) => void;
+  readonly lattice_run_rvb_quantum_monte_carlo: (a: number, b: number) => void;
   readonly lattice_get_nvars: (a: number) => number;
   readonly lattice_get_state: (a: number, b: number) => number;
   readonly lattice_get_n: (a: number) => number;
