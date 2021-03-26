@@ -1,109 +1,112 @@
-/* tslint:disable */
-/* eslint-disable */
-/**
-*/
-export function init_panic_hook(): void;
-/**
-*/
-export class Lattice {
-  free(): void;
-/**
-* Make a new lattice with `edges`, positive implies antiferromagnetic bonds, negative is
-* ferromagnetic.
-* @param {Uint32Array} edge_a
-* @param {Uint32Array} edge_b
-* @param {Float64Array} edge_j
-* @param {number} transverse
-* @param {number} beta
-* @returns {Lattice}
-*/
-  static new(edge_a: Uint32Array, edge_b: Uint32Array, edge_j: Float64Array, transverse: number, beta: number): Lattice;
-/**
-* Run a quantum monte carlo simulation, return the average energy.
-*
-* # Arguments:
-* * `timesteps`: number of timesteps to run.
-*
-* # Returns:
-*  * average energy of system
-* @param {number} timesteps
-* @returns {number}
-*/
-  run_quantum_monte_carlo(timesteps: number): number;
-/**
-* Run only the diagonal parts of a quantum monte carlo simulation.
-*
-* # Arguments:
-* * `timesteps`: number of timesteps to run.
-* @param {number} timesteps
-*/
-  run_diagonal_quantum_monte_carlo(timesteps: number): void;
-/**
-* Run only the offdiagonal parts of a quantum monte carlo simulation.
-*
-* # Arguments:
-* * `timesteps`: number of timesteps to run.
-* @param {number} timesteps
-*/
-  run_offdiagonal_quantum_monte_carlo(timesteps: number): void;
-/**
-* Run only the rvb parts of a quantum monte carlo simulation.
-*
-* # Arguments:
-* * `timesteps`: number of timesteps to run.
-* @param {number} timesteps
-*/
-  run_rvb_quantum_monte_carlo(timesteps: number): void;
-/**
-* @returns {number}
-*/
-  get_nvars(): number;
-/**
-* @param {number} i
-* @returns {boolean}
-*/
-  get_state(i: number): boolean;
-/**
-* @returns {number}
-*/
-  get_n(): number;
-/**
-* @returns {number}
-*/
-  get_cutoff(): number;
-/**
-* @param {number} n
-* @returns {number}
-*/
-  get_p_for_n(n: number): number;
-/**
-* @param {number} p
-* @returns {number | undefined}
-*/
-  get_nvars_for_op(p: number): number | undefined;
-/**
-* @param {number} p
-* @param {number} i
-* @returns {number | undefined}
-*/
-  get_nth_op_var_i(p: number, i: number): number | undefined;
-/**
-* @param {number} p
-* @param {number} i
-* @returns {boolean | undefined}
-*/
-  get_nth_op_var_i_input(p: number, i: number): boolean | undefined;
-/**
-* @param {number} p
-* @param {number} i
-* @returns {boolean | undefined}
-*/
-  get_nth_op_var_i_output(p: number, i: number): boolean | undefined;
+declare namespace wasm_bindgen {
+	/* tslint:disable */
+	/* eslint-disable */
+	/**
+	*/
+	export function init_panic_hook(): void;
+	/**
+	*/
+	export class Lattice {
+	  free(): void;
+	/**
+	* Make a new lattice with `edges`, positive implies antiferromagnetic bonds, negative is
+	* ferromagnetic.
+	* @param {Uint32Array} edge_a
+	* @param {Uint32Array} edge_b
+	* @param {Float64Array} edge_j
+	* @param {number} transverse
+	* @param {number} beta
+	* @returns {Lattice}
+	*/
+	  static new(edge_a: Uint32Array, edge_b: Uint32Array, edge_j: Float64Array, transverse: number, beta: number): Lattice;
+	/**
+	* Run a quantum monte carlo simulation, return the average energy.
+	*
+	* # Arguments:
+	* * `timesteps`: number of timesteps to run.
+	*
+	* # Returns:
+	*  * average energy of system
+	* @param {number} timesteps
+	* @returns {number}
+	*/
+	  run_quantum_monte_carlo(timesteps: number): number;
+	/**
+	* Run only the diagonal parts of a quantum monte carlo simulation.
+	*
+	* # Arguments:
+	* * `timesteps`: number of timesteps to run.
+	* @param {number} timesteps
+	*/
+	  run_diagonal_quantum_monte_carlo(timesteps: number): void;
+	/**
+	* Run only the offdiagonal parts of a quantum monte carlo simulation.
+	*
+	* # Arguments:
+	* * `timesteps`: number of timesteps to run.
+	* @param {number} timesteps
+	*/
+	  run_offdiagonal_quantum_monte_carlo(timesteps: number): void;
+	/**
+	* Run only the rvb parts of a quantum monte carlo simulation.
+	*
+	* # Arguments:
+	* * `timesteps`: number of timesteps to run.
+	* @param {number} timesteps
+	*/
+	  run_rvb_quantum_monte_carlo(timesteps: number): void;
+	/**
+	* @returns {number}
+	*/
+	  get_nvars(): number;
+	/**
+	* @param {number} i
+	* @returns {boolean}
+	*/
+	  get_state(i: number): boolean;
+	/**
+	* @returns {number}
+	*/
+	  get_n(): number;
+	/**
+	* @returns {number}
+	*/
+	  get_cutoff(): number;
+	/**
+	* @param {number} n
+	* @returns {number}
+	*/
+	  get_p_for_n(n: number): number;
+	/**
+	* @param {number} p
+	* @returns {number | undefined}
+	*/
+	  get_nvars_for_op(p: number): number | undefined;
+	/**
+	* @param {number} p
+	* @param {number} i
+	* @returns {number | undefined}
+	*/
+	  get_nth_op_var_i(p: number, i: number): number | undefined;
+	/**
+	* @param {number} p
+	* @param {number} i
+	* @returns {boolean | undefined}
+	*/
+	  get_nth_op_var_i_input(p: number, i: number): boolean | undefined;
+	/**
+	* @param {number} p
+	* @param {number} i
+	* @returns {boolean | undefined}
+	*/
+	  get_nth_op_var_i_output(p: number, i: number): boolean | undefined;
+	}
+	
 }
 
-export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
+declare type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
-export interface InitOutput {
+declare interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly __wbg_lattice_free: (a: number) => void;
   readonly lattice_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
@@ -122,6 +125,7 @@ export interface InitOutput {
   readonly lattice_get_nth_op_var_i_output: (a: number, b: number, c: number) => number;
   readonly init_panic_hook: () => void;
   readonly __wbindgen_malloc: (a: number) => number;
+  readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
   readonly __wbindgen_exn_store: (a: number) => void;
   readonly __wbindgen_free: (a: number, b: number) => void;
   readonly __wbindgen_realloc: (a: number, b: number, c: number) => number;
@@ -135,5 +139,4 @@ export interface InitOutput {
 *
 * @returns {Promise<InitOutput>}
 */
-export default function init (module_or_path?: InitInput | Promise<InitInput>): Promise<InitOutput>;
-        
+declare function wasm_bindgen (module_or_path?: InitInput | Promise<InitInput>): Promise<InitOutput>;

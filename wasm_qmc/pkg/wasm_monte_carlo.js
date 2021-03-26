@@ -171,10 +171,15 @@ class Lattice {
         return obj;
     }
 
-    free() {
+    __destroy_into_raw() {
         const ptr = this.ptr;
         this.ptr = 0;
 
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
         wasm.__wbg_lattice_free(ptr);
     }
     /**
@@ -285,14 +290,13 @@ class Lattice {
     */
     get_nvars_for_op(p) {
         try {
-            const retptr = wasm.__wbindgen_export_1.value - 16;
-            wasm.__wbindgen_export_1.value = retptr;
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
             wasm.lattice_get_nvars_for_op(retptr, this.ptr, p);
             var r0 = getInt32Memory0()[retptr / 4 + 0];
             var r1 = getInt32Memory0()[retptr / 4 + 1];
             return r0 === 0 ? undefined : r1 >>> 0;
         } finally {
-            wasm.__wbindgen_export_1.value += 16;
+            wasm.__wbindgen_add_to_stack_pointer(16);
         }
     }
     /**
@@ -302,14 +306,13 @@ class Lattice {
     */
     get_nth_op_var_i(p, i) {
         try {
-            const retptr = wasm.__wbindgen_export_1.value - 16;
-            wasm.__wbindgen_export_1.value = retptr;
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
             wasm.lattice_get_nth_op_var_i(retptr, this.ptr, p, i);
             var r0 = getInt32Memory0()[retptr / 4 + 0];
             var r1 = getInt32Memory0()[retptr / 4 + 1];
             return r0 === 0 ? undefined : r1 >>> 0;
         } finally {
-            wasm.__wbindgen_export_1.value += 16;
+            wasm.__wbindgen_add_to_stack_pointer(16);
         }
     }
     /**
@@ -335,7 +338,6 @@ __exports.Lattice = Lattice;
 
 async function load(module, imports) {
     if (typeof Response === 'function' && module instanceof Response) {
-
         if (typeof WebAssembly.instantiateStreaming === 'function') {
             try {
                 return await WebAssembly.instantiateStreaming(module, imports);
@@ -354,7 +356,6 @@ async function load(module, imports) {
         return await WebAssembly.instantiate(bytes, imports);
 
     } else {
-
         const instance = await WebAssembly.instantiate(module, imports);
 
         if (instance instanceof WebAssembly.Instance) {
@@ -382,26 +383,32 @@ async function init(input) {
         var ret = getStringFromWasm0(arg0, arg1);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_self_1c83eb4471d9eb9b = handleError(function() {
-        var ret = self.self;
-        return addHeapObject(ret);
+    imports.wbg.__wbg_getRandomValues_57e4008f45f0e105 = handleError(function(arg0, arg1) {
+        getObject(arg0).getRandomValues(getObject(arg1));
     });
     imports.wbg.__wbindgen_object_drop_ref = function(arg0) {
         takeObject(arg0);
     };
-    imports.wbg.__wbg_static_accessor_MODULE_abf5ae284bffdf45 = function() {
+    imports.wbg.__wbg_randomFillSync_d90848a552cbd666 = handleError(function(arg0, arg1, arg2) {
+        getObject(arg0).randomFillSync(getArrayU8FromWasm0(arg1, arg2));
+    });
+    imports.wbg.__wbg_self_f865985e662246aa = handleError(function() {
+        var ret = self.self;
+        return addHeapObject(ret);
+    });
+    imports.wbg.__wbg_static_accessor_MODULE_39947eb3fe77895f = function() {
         var ret = module;
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_require_5b2b5b594d809d9f = function(arg0, arg1, arg2) {
+    imports.wbg.__wbg_require_c59851dfa0dc7e78 = handleError(function(arg0, arg1, arg2) {
         var ret = getObject(arg0).require(getStringFromWasm0(arg1, arg2));
         return addHeapObject(ret);
-    };
-    imports.wbg.__wbg_crypto_c12f14e810edcaa2 = function(arg0) {
+    });
+    imports.wbg.__wbg_crypto_bfb05100db79193b = function(arg0) {
         var ret = getObject(arg0).crypto;
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_msCrypto_679be765111ba775 = function(arg0) {
+    imports.wbg.__wbg_msCrypto_f6dddc6ae048b7e2 = function(arg0) {
         var ret = getObject(arg0).msCrypto;
         return addHeapObject(ret);
     };
@@ -409,15 +416,28 @@ async function init(input) {
         var ret = getObject(arg0) === undefined;
         return ret;
     };
-    imports.wbg.__wbg_getRandomValues_05a60bf171bfc2be = function(arg0) {
-        var ret = getObject(arg0).getRandomValues;
+    imports.wbg.__wbg_buffer_0be9fb426f2dd82b = function(arg0) {
+        var ret = getObject(arg0).buffer;
         return addHeapObject(ret);
     };
-    imports.wbg.__wbg_getRandomValues_3ac1b33c90b52596 = function(arg0, arg1, arg2) {
-        getObject(arg0).getRandomValues(getArrayU8FromWasm0(arg1, arg2));
+    imports.wbg.__wbg_length_3a5138f465b971ad = function(arg0) {
+        var ret = getObject(arg0).length;
+        return ret;
     };
-    imports.wbg.__wbg_randomFillSync_6f956029658662ec = function(arg0, arg1, arg2) {
-        getObject(arg0).randomFillSync(getArrayU8FromWasm0(arg1, arg2));
+    imports.wbg.__wbg_new_4e8d18dbf9cd5240 = function(arg0) {
+        var ret = new Uint8Array(getObject(arg0));
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_set_4769de301eb521d7 = function(arg0, arg1, arg2) {
+        getObject(arg0).set(getObject(arg1), arg2 >>> 0);
+    };
+    imports.wbg.__wbg_newwithlength_19241666d161c55f = function(arg0) {
+        var ret = new Uint8Array(arg0 >>> 0);
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbg_subarray_b07d46fd5261d77f = function(arg0, arg1, arg2) {
+        var ret = getObject(arg0).subarray(arg1 >>> 0, arg2 >>> 0);
+        return addHeapObject(ret);
     };
     imports.wbg.__wbg_new_59cb74e423758ede = function() {
         var ret = new Error();
@@ -443,10 +463,16 @@ async function init(input) {
     imports.wbg.__wbindgen_rethrow = function(arg0) {
         throw takeObject(arg0);
     };
+    imports.wbg.__wbindgen_memory = function() {
+        var ret = wasm.memory;
+        return addHeapObject(ret);
+    };
 
     if (typeof input === 'string' || (typeof Request === 'function' && input instanceof Request) || (typeof URL === 'function' && input instanceof URL)) {
         input = fetch(input);
     }
+
+
 
     const { instance, module } = await load(await input, imports);
 
